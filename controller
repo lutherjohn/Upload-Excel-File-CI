@@ -1,0 +1,40 @@
+# Controller Code
+
+public function import_xls_file(){ 
+
+		
+		$config['upload_path']          = FCPATH.'upload/';
+        $config['allowed_types']        = 'xls|csv';
+
+        $this->load->library('upload', $config);
+
+        if ($this->upload->do_upload('file')){
+        		$data = $this->upload->data();
+        		@chmod($data['full_path'],0777);
+        	$this->load->library('Spreadsheet_Excel_Reader');
+			$this->spreadsheet_excel_reader->setOutputEncoding('CP1251');
+
+			$this->spreadsheet_excel_reader->read($data['full_path']);
+			$sheets = $this->spreadsheet_excel_reader->sheets[0];
+			error_reporting(0);
+
+			$data_excel = array();
+			for ($i = 2; $i <= $sheets['numRows']; $i++) {
+				if ($sheets['cells'][$i][1] == '') break;
+
+				$data_excel[$i - 1]['code']    = $sheets['cells'][$i][1]; //your data
+				$data_excel[$i - 1]['firstName']   = $sheets['cells'][$i][2]; //your data
+				$data_excel[$i - 1]['surName'] = $sheets['cells'][$i][3]; //your data
+				$data_excel[$i - 1]['gender']   = $sheets['cells'][$i][4]; //your data
+				$data_excel[$i - 1]['dob'] = $sheets['cells'][$i][5]; //your data
+				$data_excel[$i - 1]['form'] = $sheets['cells'][$i][6];// your data
+				$data_excel[$i - 1]['nationality'] = $sheets['cells'][$i][7]; //your data
+				$data_excel[$i - 1]['subject_set']   = $sheets['cells'][$i][8]; //your data
+				$data_excel[$i - 1]['teacher'] = $sheets['cells'][$i][9]; //your data
+			}
+
+			$this->db->insert_batch('test_upload_xls', $data_excel);
+			// @unlink($data['full_path']);
+			redirect('Ec_controller/view_test_page');
+        }
+	}
